@@ -16,6 +16,9 @@ class Grid(object):
 		self.__machine_eps 	= 7./3 - 4./3 - 1.
 		self.__test_eval_x 	= (left_bounds + right_bounds)/2.0
 
+		self._max_levels 		= []
+		self._surplus_points 	= {}
+
 	def __get_no_1D_grid_points(self, level):
 
 		no_points = 0
@@ -48,7 +51,7 @@ class Grid(object):
 		    return -1
 
 		poly = 1.0
-		for i in xrange(len(sorted_points)):
+		for i in range(len(sorted_points)):
 		    poly *= np.abs(x - sorted_points[i])
 
 		poly *= weight(x)
@@ -78,7 +81,7 @@ class Grid(object):
 		unsorted_points.append(starting_point)
 		surplus_points.append(starting_point)
 
-		for point in xrange(1, no_points):
+		for point in range(1, no_points):
 
 			if self.__linear_growth_factor == 'sym' and point >= 3 and np.mod(point, 2) == 1:
 				x_val = []
@@ -86,7 +89,7 @@ class Grid(object):
 
 				a = 0.
 				b = left_bound
-				for i in xrange(len(sorted_points) + 1):
+				for i in range(len(sorted_points) + 1):
 				    sorted_points = sorted(sorted_points)
 
 				    a = b
@@ -102,9 +105,9 @@ class Grid(object):
 				        wlleja_func = lambda x : self.__get_neg_lleja_poly(x, sorted_points, a, b, weight)
 				        x_min 		= self.__minimize_function(wlleja_func, a, b)
 
-				    	x_val.append(x_min)
-				    	y_min = wlleja_func(x_val[-1])
-				    	y_val.append(y_min)
+				        x_val.append(x_min)
+				        y_min = wlleja_func(x_val[-1])
+				        y_val.append(y_min)
 				    else:
 				    	x_val.append(x_min)
 				    	y_val.append(y_min)
@@ -125,7 +128,7 @@ class Grid(object):
 
 				a = 0.
 				b = left_bound
-				for i in xrange(len(sorted_points) + 1):
+				for i in range(len(sorted_points) + 1):
 				    sorted_points = sorted(sorted_points)
 
 				    a = b
@@ -141,9 +144,9 @@ class Grid(object):
 				        wlleja_func = lambda x : self.__get_neg_lleja_poly(x, sorted_points, a, b, weight)
 				        x_min 		= self.__minimize_function(wlleja_func, a, b)
 
-				    	x_val.append(x_min)
-				    	y_min = wlleja_func(x_val[-1])
-				    	y_val.append(y_min)
+				        x_val.append(x_min)
+				        y_min = wlleja_func(x_val[-1])
+				        y_val.append(y_min)
 				    else:
 				    	x_val.append(x_min)
 				    	y_val.append(y_min)
@@ -168,13 +171,13 @@ class Grid(object):
 		sorted_points.append(starting_point)
 		unsorted_points.append(starting_point)
 
-		for point in xrange(1, no_points):
+		for point in range(1, no_points):
 		    x_val = []
 		    y_val = []
 
 		    a = 0.
 		    b = left_bound
-		    for i in xrange(len(sorted_points) + 1):
+		    for i in range(len(sorted_points) + 1):
 		        sorted_points = sorted(sorted_points)
 
 		        a = b
@@ -197,8 +200,8 @@ class Grid(object):
 		        	x_val.append(x_min)
 		        	y_val.append(y_min)
 
-			wlleja_point = x_val[y_val.index(np.min(y_val))]
-			sorted_points.append(wlleja_point)
+		    wlleja_point = x_val[y_val.index(np.min(y_val))]
+		    sorted_points.append(wlleja_point)
 		    unsorted_points.append(wlleja_point)
 
 		unsorted_points = np.array(unsorted_points, dtype=np.float64)
@@ -216,7 +219,7 @@ class Grid(object):
 		x0 				= unsorted_points[0]
 		starting_point 	= self.__get_starting_point(left_bound, right_bound, weight)
 
-		for point in xrange(len(sorted_points), no_points):
+		for point in range(len(sorted_points), no_points):
 
 			if self.__linear_growth_factor == 'sym' and point >= 3 and np.mod(point, 2) == 1:
 				x_val = []
@@ -224,7 +227,7 @@ class Grid(object):
 
 				a = 0.
 				b = left_bound
-				for i in xrange(len(sorted_points) + 1):
+				for i in range(len(sorted_points) + 1):
 				    sorted_points = sorted(sorted_points)
 
 				    a = b
@@ -240,9 +243,9 @@ class Grid(object):
 				        wlleja_func = lambda x : self.__get_neg_lleja_poly(x, sorted_points, a, b, weight)
 				        x_min 		= self.__minimize_function(wlleja_func, a, b)
 
-				    	x_val.append(x_min)
-				    	y_min = wlleja_func(x_val[-1])
-				    	y_val.append(y_min)
+				        x_val.append(x_min)
+				        y_min = wlleja_func(x_val[-1])
+				        y_val.append(y_min)
 				    else:
 				    	x_val.append(x_min)
 				    	y_val.append(y_min)
@@ -263,7 +266,7 @@ class Grid(object):
 
 				a = 0.
 				b = left_bound
-				for i in xrange(len(sorted_points) + 1):
+				for i in range(len(sorted_points) + 1):
 				    sorted_points = sorted(sorted_points)
 
 				    a = b
@@ -279,9 +282,9 @@ class Grid(object):
 				        wlleja_func = lambda x : self.__get_neg_lleja_poly(x, sorted_points, a, b, weight)
 				        x_min 		= self.__minimize_function(wlleja_func, a, b)
 
-				    	x_val.append(x_min)
-				    	y_min = wlleja_func(x_val[-1])
-				    	y_val.append(y_min)
+				        x_val.append(x_min)
+				        y_min = wlleja_func(x_val[-1])
+				        y_val.append(y_min)
 				    else:
 				    	x_val.append(x_min)
 				    	y_val.append(y_min)
@@ -299,14 +302,14 @@ class Grid(object):
 	def __get_indices_all(self, level):
 
 		no_points 	= self.__get_no_1D_grid_points(level)
-		indices_all = np.array([i for i in xrange(no_points)])
+		indices_all = np.array([i for i in range(no_points)])
 
 		return indices_all
 
 	def __get_indices_surpluses_all(self, no_surplus_points, level):
 
 		no_points 			= self.__get_no_1D_grid_points(level)
-		indices_surpluses 	= np.array([i for i in xrange(no_points - no_surplus_points, no_points)])
+		indices_surpluses 	= np.array([i for i in range(no_points - no_surplus_points, no_points)])
 
 		return indices_surpluses
 
@@ -319,11 +322,11 @@ class Grid(object):
 	def __get_1D_surplus_indices_per_dim(self, max_level, d):
 		
 		all_1D_indices_dim_d 		= []
-		unique_levels 				= np.array(range(self.__init_level, max_level + 1), dtype=int)
+		unique_levels 				= np.array(list(range(self.__init_level, max_level + 1)), dtype=int)
 
 		prev_indices_all = self.__get_indices_all(unique_levels[0])
 		all_1D_indices_dim_d.append(prev_indices_all)
-		for i in xrange(1, len(unique_levels)):
+		for i in range(1, len(unique_levels)):
 			curr_indices_all 	= self.__get_indices_all(unique_levels[i])
 			no_surplus_points 	= len(curr_indices_all) - len(prev_indices_all)
 			indices_surplus 	= self.__get_indices_surpluses_all(no_surplus_points, unique_levels[i])
@@ -340,8 +343,8 @@ class Grid(object):
 		all_1D_indices_dim = self.__get_1D_fg_indices_per_dim(max_level, 0)
 		all_1D_indices.append(all_1D_indices_dim)
 
-		for d1 in xrange(1, self.__dim):
-			for d2 in xrange(self.__dim):
+		for d1 in range(1, self.__dim):
+			for d2 in range(self.__dim):
 				if d1 != d2:
 					if self.__weights[d1](self.__test_eval_x[d1]) - self.__weights[d2](self.__test_eval_x[d2]) == 0.:
 						if d1 < d2:
@@ -364,8 +367,8 @@ class Grid(object):
 		all_1D_indices_dim = self.__get_1D_surplus_indices_per_dim(max_level, 0)
 		all_1D_indices.append(all_1D_indices_dim)
 
-		for d1 in xrange(1, self.__dim):
-			for d2 in xrange(self.__dim):
+		for d1 in range(1, self.__dim):
+			for d2 in range(self.__dim):
 				if d1 != d2:
 					if self.__weights[d1](self.__test_eval_x[d1]) - self.__weights[d2](self.__test_eval_x[d2]) == 0.:
 						if d1 < d2:
@@ -388,8 +391,8 @@ class Grid(object):
 		all_1D_grid_points_dim = self.get_1D_fg_points_per_dim(max_level, 0, eps)
 		all_1D_grid_points.append(all_1D_grid_points_dim)
 
-		for d1 in xrange(1, self.__dim):
-			for d2 in xrange(self.__dim):
+		for d1 in range(1, self.__dim):
+			for d2 in range(self.__dim):
 				if d1 != d2:
 					if self.__weights[d1](self.__test_eval_x[d1]) - self.__weights[d2](self.__test_eval_x[d2]) == 0.:
 						if d1 < d2:
@@ -406,27 +409,42 @@ class Grid(object):
 		return all_1D_grid_points
 
 
+	# def __get_all_1D_surplus_points(self, max_level, eps=1e-14):
+		
+	# 	all_1D_grid_points 	= []
+
+	# 	all_1D_grid_points_dim = self.get_1D_surplus_points_per_dim(max_level, 0, eps)
+	# 	all_1D_grid_points.append(all_1D_grid_points_dim)
+
+	# 	for d1 in range(1, self.__dim):
+	# 		for d2 in range(self.__dim):
+	# 			if d1 != d2:
+
+
+	# 				if self.__weights[d1](self.__test_eval_x[d1]) - self.__weights[d2](self.__test_eval_x[d2]) == 0.:
+	# 					if d1 < d2:
+	# 						all_1D_grid_points_dim 	= all_1D_grid_points[d1]
+	# 					else:
+	# 						all_1D_grid_points_dim 	= all_1D_grid_points[d2]
+
+	# 					all_1D_grid_points.append(all_1D_grid_points_dim)
+	# 					break
+	# 				else:
+	# 					all_1D_grid_points_dim = self.get_1D_surplus_points_per_dim(max_level, d1, eps)
+	# 					all_1D_grid_points.append(all_1D_grid_points_dim)
+
+	# 					print('HERE')
+
+	# 	return all_1D_grid_points
+
+
 	def __get_all_1D_surplus_points(self, max_level, eps=1e-14):
 		
 		all_1D_grid_points 	= []
 
-		all_1D_grid_points_dim = self.get_1D_surplus_points_per_dim(max_level, 0, eps)
-		all_1D_grid_points.append(all_1D_grid_points_dim)
-
-		for d1 in xrange(1, self.__dim):
-			for d2 in xrange(self.__dim):
-				if d1 != d2:
-					if self.__weights[d1](self.__test_eval_x[d1]) - self.__weights[d2](self.__test_eval_x[d2]) == 0.:
-						if d1 < d2:
-							all_1D_grid_points_dim 	= all_1D_grid_points[d1]
-						else:
-							all_1D_grid_points_dim 	= all_1D_grid_points[d2]
-
-						all_1D_grid_points.append(all_1D_grid_points_dim)
-						break
-					else:
-						all_1D_grid_points_dim = self.get_1D_surplus_points_per_dim(max_level, d1, eps)
-						all_1D_grid_points.append(all_1D_grid_points_dim)
+		for d in range(self.__dim):
+			all_1D_grid_points_dim = self.get_1D_surplus_points_per_dim(max_level, d, eps)
+			all_1D_grid_points.append(all_1D_grid_points_dim)
 
 		return all_1D_grid_points
 
@@ -440,7 +458,7 @@ class Grid(object):
 		for mindex in multiindex_set:
 
 			level_indices = []
-			for d in xrange(self.__dim):
+			for d in range(self.__dim):
 				indices_1D 	= all_indices_1D[d][mindex[d] - 1]
 				level_indices.append(indices_1D)
 
@@ -460,7 +478,7 @@ class Grid(object):
 		for mindex in multiindex_set:
 
 			level_indices = []
-			for d in xrange(self.__dim):
+			for d in range(self.__dim):
 				indices_1D 	= all_indices_1D[d][mindex[d] - 1]
 				level_indices.append(indices_1D)
 
@@ -474,7 +492,7 @@ class Grid(object):
 	def __get_no_fg_grid_points_mindex(self, multiindex):
 
 		no_grid_points = 1
-		for d in xrange(self.__dim):
+		for d in range(self.__dim):
 			no_grid_points *= self.__get_no_1D_grid_points(multiindex[d])
 
 		return no_grid_points
@@ -482,7 +500,7 @@ class Grid(object):
 	def __get_no_surplus_grid_points_mindex(self, multiindex):
 
 		no_grid_points = 1
-		for d in xrange(self.__dim):
+		for d in range(self.__dim):
 			if multiindex[d] != 1:
 				no_surplus_points = self.__get_no_1D_grid_points(multiindex[d]) - \
 										self.__get_no_1D_grid_points(multiindex[d] - 1) 
@@ -493,12 +511,12 @@ class Grid(object):
 	def __get_1D_fg_indices_per_dim(self, max_level, d):
 
 		all_1D_indices_dim_d 		= []
-		unique_levels 				= np.array(range(self.__init_level, max_level + 1), dtype=int)
+		unique_levels 				= np.array(list(range(self.__init_level, max_level + 1)), dtype=int)
 
 		indices_all = self.__get_indices_all(unique_levels[0])
 
 		all_1D_indices_dim_d.append(indices_all)
-		for i in xrange(1, len(unique_levels)):
+		for i in range(1, len(unique_levels)):
 			indices_all = self.__get_indices_all(unique_levels[i])
 			
 			all_1D_indices_dim_d.append(indices_all)
@@ -509,13 +527,13 @@ class Grid(object):
 		
 		all_1D_grid_points_dim_d 	= []
 		all_1D_indices_dim_d 		= []
-		unique_levels 				= np.array(range(self.__init_level, max_level + 1), dtype=int)
+		unique_levels 				= np.array(list(range(self.__init_level, max_level + 1)), dtype=int)
 
 		unsorted_prev_points = self.__get_1D_level_points(unique_levels[0], self.__left_bounds[d], \
 															self.__right_bounds[d], self.__weights[d], eps)
 
 		all_1D_grid_points_dim_d.append(unsorted_prev_points)
-		for i in xrange(1, len(unique_levels)):
+		for i in range(1, len(unique_levels)):
 			unsorted_prev_points, surplus_level_points = self.__get_1D_surplus_and_level_points(unsorted_prev_points, \
 								unique_levels[i], self.__left_bounds[d], self.__right_bounds[d], self.__weights[d], eps)
 
@@ -526,13 +544,13 @@ class Grid(object):
 	def get_1D_surplus_points_per_dim(self, max_level, d, eps=1e-14):
 		
 		all_1D_grid_points_dim_d 	= []
-		unique_levels 				= np.array(range(self.__init_level, max_level + 1), dtype=int)
+		unique_levels 				= np.array(list(range(self.__init_level, max_level + 1)), dtype=int)
 
 		unsorted_prev_points = self.__get_1D_level_points(unique_levels[0], self.__left_bounds[d], \
 															self.__right_bounds[d], self.__weights[d], eps)
 
 		all_1D_grid_points_dim_d.append(unsorted_prev_points)
-		for i in xrange(1, len(unique_levels)):
+		for i in range(1, len(unique_levels)):
 			unsorted_prev_points, surplus_level_points = self.__get_1D_surplus_and_level_points(unsorted_prev_points, \
 								unique_levels[i], self.__left_bounds[d], self.__right_bounds[d], self.__weights[d], eps)
 
@@ -548,8 +566,8 @@ class Grid(object):
 		all_1D_grid_points_dim 	= self.get_1D_fg_points_per_dim(max_level, 0, eps)
 		all_1D_grid_points.append(all_1D_grid_points_dim)
 
-		for d1 in xrange(1, self.__dim):
-			for d2 in xrange(self.__dim):
+		for d1 in range(1, self.__dim):
+			for d2 in range(self.__dim):
 				if d1 != d2:
 					if self.__weights[d1](self.__test_eval_x[d1]) - self.__weights[d2](self.__test_eval_x[d2]) == 0.:
 						if d1 < d2:
@@ -570,8 +588,20 @@ class Grid(object):
 		max_level 			= np.max(multiindex)
 		all_1D_grid_points 	= self.__get_all_1D_surplus_points(max_level, eps)	
 
+		if max_level in self._max_levels:
+			all_1D_grid_points = self._surplus_points[max_level]
+
+		else:
+
+			max_level 			= np.max(multiindex)
+			all_1D_grid_points 	= self.__get_all_1D_surplus_points(max_level, eps)	
+
+
+			self._max_levels.append(max_level)
+			self._surplus_points[max_level] = all_1D_grid_points
+
 		level_points 	= []
-		for d in xrange(self.__dim):
+		for d in range(self.__dim):
 			points_1D 	= all_1D_grid_points[d][multiindex[d] - 1]
 			level_points.append(points_1D)
 
@@ -583,7 +613,7 @@ class Grid(object):
 		
 		all_1D_points_multiindex = []
 
-		for d in xrange(self.__dim):
+		for d in range(self.__dim):
 			all_1D_grid_points_dim 	= self.get_1D_fg_points_per_dim(multiindex[d], d, eps)	
 			all_1D_points_multiindex.append(all_1D_grid_points_dim)
 
@@ -591,13 +621,44 @@ class Grid(object):
 
 		return all_1D_points_multiindex
 
+	def get_fg_points_multiindex(self, multiindex, all_grid_points_1D, eps=1e-14):
+
+		level_points 	= []
+		for d in range(self.__dim):
+
+			index 			= multiindex[d]
+			curr_no_points 	= self.__get_no_1D_grid_points(index)
+			points_1D 		= all_grid_points_1D[d][0:curr_no_points]
+
+			level_points.append(points_1D)
+
+		sg_points = self.__tensorize(level_points)
+
+		return sg_points
+
+	# def get_fg_points_multiindex(self, multiindex, eps=1e-14):
+
+	# 	level_points 	= []
+	# 	for d in range(self.__dim):
+
+	# 		index 				= multiindex[d]
+	# 		grid_points_1D, _ 	= self.get_1D_points(index, self.__left_bounds[d], self.__right_bounds[d], self.__weights[d])
+	# 		curr_no_points 		= self.__get_no_1D_grid_points(index)
+	# 		points_1D 			= grid_points_1D[0:curr_no_points]
+
+	# 		level_points.append(points_1D)
+
+	# 	sg_points = self.__tensorize(level_points)
+
+	# 	return sg_points
+
 	# def get_fg_points_multiindex(self, multiindex, eps=1e-14):
 
 	# 	max_level 			= np.max(multiindex)
 	# 	all_1D_grid_points 	= self.__get_all_1D_fg_points(max_level, eps)	
 
 	# 	level_points 	= []
-	# 	for d in xrange(self.__dim):
+	# 	for d in range(self.__dim):
 	# 		points_1D 	= all_1D_grid_points[d][multiindex[d] - 1]
 	# 		level_points.append(points_1D)
 
@@ -605,20 +666,20 @@ class Grid(object):
 
 	# 	return sg_points
 
-	def get_fg_points_multiindex(self, multiindex, grid_points_1D, eps=1e-14):
+	# def get_fg_points_multiindex(self, multiindex, grid_points_1D, eps=1e-14):
 
-		level_points 	= []
-		for d in xrange(self.__dim):
+	# 	level_points 	= []
+	# 	for d in range(self.__dim):
 
-			index 			= multiindex[d]
-			curr_no_points 	= self.__get_no_1D_grid_points(index)
-			points_1D 		= grid_points_1D[0:curr_no_points]
+	# 		index 			= multiindex[d]
+	# 		curr_no_points 	= self.__get_no_1D_grid_points(index)
+	# 		points_1D 		= grid_points_1D[0:curr_no_points]
 
-			level_points.append(points_1D)
+	# 		level_points.append(points_1D)
 
-		sg_points = self.__tensorize(level_points)
+	# 	sg_points = self.__tensorize(level_points)
 
-		return sg_points
+	# 	return sg_points
 
 	def get_std_sg_surplus_points(self, multiindex_set, eps=1e-14):
 
@@ -629,7 +690,7 @@ class Grid(object):
 		for i, mindex in enumerate(multiindex_set):
 
 			level_points 	= []
-			for d in xrange(self.__dim):
+			for d in range(self.__dim):
 				points_1D 	= all_1D_grid_points[d][mindex[d] - 1]
 				level_points.append(points_1D)
 
@@ -646,7 +707,7 @@ class Grid(object):
 		map_0_1_a_b 		= lambda x, d: left_stoch_boundary[d] + (right_stoch_boundary[d] - left_stoch_boundary[d])*x
 
 		for i, sg_point in enumerate(std_sg_points):
-			for j in xrange(self.__dim):
+			for j in range(self.__dim):
 				mapped_sg_points[i, j] = map_0_1_a_b(sg_point[j], j)
 
 		return mapped_sg_points

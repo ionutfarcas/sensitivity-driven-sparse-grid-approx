@@ -1,4 +1,4 @@
-from abstract_adapt_operation import *
+from .abstract_adapt_operation import *
 
 class SpectralScoresAll(DimensionAdaptivity):
 
@@ -36,10 +36,16 @@ class SpectralScoresAll(DimensionAdaptivity):
 		local_score 	= 0.
 		local_variances = self.__spectral_op_obj.get_local_var_level_active_set_all(self._multiindex_bin, self._multiindex_set, curr_multiindex)
 
+		upper_bound = int(self._dim + self._dim*(self._dim + 1)/2)
+
+		# print('adaptivity step')
+		# print(curr_multiindex)
+		# print(local_variances[:upper_bound])
+
 		if np.sum(curr_multiindex) == self._dim:
 			local_score = 1
 		else:
-			for d in xrange(2**self._dim - 1):
+			for d in range(2**self._dim - 1):
 				if local_variances[d] >= self._tols[d]:
 					local_score += 1
 
@@ -47,8 +53,8 @@ class SpectralScoresAll(DimensionAdaptivity):
 
 	def __get_max_score(self):
 
-		max_scores_pos 	= np.where(np.array([local_score == np.amax(self._local_error.values()) for local_score in self._local_error.values()]))[0]
-		max_scores_keys = np.array([self._local_error.keys()[max_pos] for max_pos in max_scores_pos])
+		max_scores_pos 	= np.where(np.array([local_score == np.amax(list(self._local_error.values())) for local_score in list(self._local_error.values())]))[0]
+		max_scores_keys = np.array([list(self._local_error.keys())[max_pos] for max_pos in max_scores_pos])
 
 		max_elem 	= 0.
 		max_key 	= 0
@@ -88,7 +94,7 @@ class SpectralScoresAll(DimensionAdaptivity):
 
 		max_index 	= self.__get_max_score()
 		max_i 		= self._A[max_index]
-		
+
 		self._key_O				+= 1
 		self._O[self._key_O] 	= max_i
 		self._eta 				-= self._local_error[max_index]
@@ -100,6 +106,8 @@ class SpectralScoresAll(DimensionAdaptivity):
 		for neighbor in neighbors_i:
 			if self._is_O_admissible(neighbor):
 
+				#print 'ADDED ADMISSIBLE NEIGHBOR', neighbor
+
 				local_multiindices.append(neighbor)
 
 				self._key_A 		+= 1
@@ -109,6 +117,9 @@ class SpectralScoresAll(DimensionAdaptivity):
 
 				local_basis_neighbor = np.array([self._get_no_1D_grid_points(n) - 1 for n in neighbor], dtype=int)
 				self._update_local_basis(neighbor.tolist(), local_basis_neighbor)
+
+			# else:
+			# 	print neighbor, 'NONADMISSIBLE NEIGHBOR'
 
 		local_multiindices = np.array(local_multiindices, dtype=int)
 
@@ -127,7 +138,7 @@ class SpectralScoresAll(DimensionAdaptivity):
 	def check_termination_criterion(self):
 
 		max_level = np.max(self._multiindex_set)
-		if len(self._A.values()) == 0 or np.sum(self._local_error.values()) == 0. or max_level >= self._max_level:
+		if len(list(self._A.values())) == 0 or np.sum(list(self._local_error.values())) == 0. or max_level >= self._max_level:
 			self._stop_adaption = True
 
 	def serialize_data(self, serialization_file):

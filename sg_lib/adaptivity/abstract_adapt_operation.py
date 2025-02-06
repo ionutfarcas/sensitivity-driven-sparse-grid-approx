@@ -4,9 +4,7 @@ from collections import OrderedDict
 from pickle import dump, load
 from sg_lib.algebraic.multiindex import *
 
-class DimensionAdaptivity(object):
-
-	__metaclass__ = ABCMeta
+class DimensionAdaptivity(object, metaclass=ABCMeta):
 
 	_dim 				= 0
 	_init_multiindex 	= None
@@ -64,9 +62,9 @@ class DimensionAdaptivity(object):
 	def _is_O_admissible(self, multiindex):
 
 		admisability 	= 1
-		old_index_set 	= [list(item) for item in self._O.values()]
+		old_index_set 	= [item.tolist() for item in list(self._O.values())]
 
-		for q in xrange(self._dim):
+		for q in range(self._dim):
 			temp  	= np.zeros(self._dim, dtype=int)
 			temp[q] = 1
 
@@ -109,11 +107,11 @@ class DimensionAdaptivity(object):
 	def _get_local_hierarchical_basis(self, largest_basis):
 
 		temp 			= np.eye(self._dim, dtype=int)
-		first_basis 	= [0 for i in xrange(self._dim)]
+		first_basis 	= [0 for i in range(self._dim)]
 
 		local_basis = [largest_basis.tolist()]
 	 	 		
-		for d in xrange(self._dim):
+		for d in range(self._dim):
 			curr_multiindex = local_basis[-1]
 
 			temp_multiindex = np.array(curr_multiindex, dtype=int) - temp[d, :]

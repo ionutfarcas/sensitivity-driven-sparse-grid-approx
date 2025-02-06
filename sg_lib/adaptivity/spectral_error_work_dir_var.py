@@ -1,4 +1,4 @@
-from abstract_adapt_operation import *
+from .abstract_adapt_operation import *
 
 class SpectralErrorWorkDirVar(DimensionAdaptivity):
 
@@ -38,7 +38,7 @@ class SpectralErrorWorkDirVar(DimensionAdaptivity):
 
 		is_less_or_equal_then = True
 
-		for i in xrange(len(multiindex_a)):
+		for i in range(len(multiindex_a)):
 			if multiindex_a[i] > multiindex_b[i]:
 				is_less_or_equal_then = False
 				break
@@ -141,22 +141,22 @@ class SpectralErrorWorkDirVar(DimensionAdaptivity):
 
 			self._eta += local_error_indicator
 
-		self._partial_var_active_set 	= spectral_op_obj.get_directional_var_active_set(self._multiindex_set, self._A.values())
-		curr_active_set 				= np.array(self._A.values())
+		self._partial_var_active_set 	= spectral_op_obj.get_directional_var_active_set(self._multiindex_set, list(self._A.values()))
+		curr_active_set 				= np.array(list(self._A.values()))
 
 		if len(curr_active_set) >= 1:
 			curr_max_levels = np.amax(self._multiindex_set, axis=0)
 
 			if len(self._levels_converged_dims_all) == 0:
-				for d in xrange(self._dim):
+				for d in range(self._dim):
 					if self._partial_var_active_set[d] <= self._tol_dims[d]:
 
 						self._levels_converged_dims[d] = curr_max_levels[d]
 						self._levels_converged_dims_all.append(self._levels_converged_dims.copy())
 			else:
-				global_min_levels = np.amin(self.levels_converged_dims_all, axis=0)
+				global_min_levels = np.amin(self._levels_converged_dims_all, axis=0)
 
-				for d in xrange(self._dim):
+				for d in range(self._dim):
 					if self._partial_var_active_set[d] <= self._tol_dims[d]:
 						if curr_max_levels[d] < global_min_levels[d]:
 							self._levels_converged_dims[d] = curr_max_levels[d]
@@ -167,7 +167,7 @@ class SpectralErrorWorkDirVar(DimensionAdaptivity):
 	def check_termination_criterion(self):
 
 		max_level = np.max(self._multiindex_set)
-		if len(self._A.values()) == 0 or self._eta <= self._tol or max_level >= self._max_level or \
+		if len(list(self._A.values())) == 0 or self._eta <= self._tol or max_level >= self._max_level or \
 									self.__is_less_or_equal_then(self._partial_var_active_set, self._tol_dims):
 			self._stop_adaption = True 
 

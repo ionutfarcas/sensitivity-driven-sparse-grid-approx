@@ -1,5 +1,5 @@
-from onedim import *
-from abstract_operation import *
+from .onedim import *
+from .abstract_operation import *
 
 class Interpolation(AbstractOperation):
 	def __init__(self, dim):
@@ -19,13 +19,13 @@ class Interpolation(AbstractOperation):
 		interp_fg 	 	= 0.
 		poly_eval_all 	= []
 
-		for d in xrange(self._dim):
+		for d in range(self._dim):
 			index 				= multiindex[d] 
 			grid_1D 			= self._grid_points_1D[d][index - 1]
 			barycentric_weights	= get_1D_barycentric_weights(grid_1D)
 
 			poly_eval = []
-			for j in xrange(len(grid_1D)):
+			for j in range(len(grid_1D)):
 				p_eval = eval_1D_barycentric_interpolant(grid_1D, barycentric_weights, j, x[d])
 				poly_eval.append(p_eval)
 
@@ -33,7 +33,7 @@ class Interpolation(AbstractOperation):
 
 		tensorized_basis_val = np.array([np.prod(interp_pair) for interp_pair in list(product(*poly_eval_all))], dtype=np.float64)
 
-		for i in xrange(len(tensorized_basis_val)):
+		for i in range(len(tensorized_basis_val)):
 			interp_fg += tensorized_basis_val[i]*curr_func_evals[i]
 
 		return interp_fg
@@ -45,8 +45,8 @@ class Interpolation(AbstractOperation):
 		multiindex_dict 						= self._get_multiindex_dict(multiindex_set)
 		differences_indices, differences_signs 	= self._get_differences_sign(curr_multiindex)
 
-		keys_differences 	= differences_indices.keys()
-		keys_signs 			= differences_signs.keys() 
+		keys_differences 	= list(differences_indices.keys())
+		keys_signs 			= list(differences_signs.keys()) 
 
 		for key in keys_differences:
 			differences 	= differences_indices[key]

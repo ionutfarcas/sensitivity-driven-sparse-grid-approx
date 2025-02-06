@@ -1,4 +1,4 @@
-from abstract_adapt_operation import *
+from .abstract_adapt_operation import *
 
 class DimensionPriority(DimensionAdaptivity):
 
@@ -15,14 +15,17 @@ class DimensionPriority(DimensionAdaptivity):
 
 		self.__spectral_op_obj = spectral_op_obj
 
-		self._eta = 0.
+		self._edge_set_dna = np.zeros(2**dim - 1, dtype=int)
+
+		self._multiindices_edge_set_to_del = []
 
 		self._O 				= OrderedDict()
-		self._B 				= OrderedDict() 
-		self._local_error 		= OrderedDict()
+		self._E 				= OrderedDict() 
+		self._local_dir_var 	= OrderedDict()
 		self._key_O 			= 0
-		self._key_B 			= 0
-		self._key_local_error 	= 0
+		self._key_E 			= 0
+
+		self._max_dir_vars = np.zeros(2**dim - 1)
 
 		self._multiindex_set 	= []
 		self._init_no_points 	= 0
@@ -34,52 +37,55 @@ class DimensionPriority(DimensionAdaptivity):
 
 		self._multiindex_bin = Multiindex(self._dim).get_poly_mindex_binary(self._dim)
 
-	def __get_local_score(self, curr_multiindex):
+	@property
+	def E(self):
 		
-		local_score 	= 0.
-		local_variances = self.__spectral_op_obj.get_local_var_level_active_set_all(self._multiindex_bin, self._multiindex_set, curr_multiindex)
+		return self._E
 
-		print 'local variances'
-		print local_variances
+	@property
+	def edge_set_dna(self):
+		
+		return self._edge_set_dna
 
-		if np.sum(curr_multiindex) == self._dim:
-			local_score = 1
-		else:
-			for d in xrange(2**self._dim - 1):
-				if local_variances[d] >= self._tols[d]:
-					local_score += 1
+	def __find_keys(self, ordered_dict, value):
 
-		return local_score
+		key_of_interest = 0
+		for key in list(ordered_dict.keys()):
+			if ordered_dict[key].tolist() == value:
+				key_of_interest = key
 
-	def __get_max_score(self):
+		return key_of_interest
 
-		max_scores_pos 	= np.where(np.array([local_score == np.amax(self._local_error.values()) for local_score in self._local_error.values()]))[0]
-		max_scores_keys = np.array([self._local_error.keys()[max_pos] for max_pos in max_scores_pos])
+	def update_dir_vars(self, multiindex):
 
-		max_elem 	= 0.
-		max_key 	= 0
-		if len(max_scores_keys) >= 2:
-			for key in max_scores_keys:
-				multiindex 		= self._B[key]
+		delta_coeff 	= self.__spectral_op_obj.get_spectral_coeff_delta(multiindex)
+		curr_dir_var 	= self.__spectral_op_obj.get_all_dir_var_multiindex(self._multiindex_bin, delta_coeff, multiindex)
 
-				local_variance 	= self.__spectral_op_obj.get_total_var_level_active_set(self._multiindex_set, multiindex)
+		self._local_dir_var[repr(multiindex.tolist())] = curr_dir_var
 
-				if local_variance >= max_elem:
-					max_elem 	= local_variance
-					max_key 	= key
+		print('MULTIINDEX', multiindex)
+		print('curr_dir_var', curr_dir_var)
 
-		else:
-			max_key = max_scores_keys[0]
+		for multiindex in self._multiindices_edge_set_to_del:
+			del self._local_dir_var[repr(multiindex)]
 
-		return max_key
+	def get_edge_set_dna(self):
+
+		local_dir_vars 	= np.array([local_dir_var for local_dir_var in list(self._local_dir_var.values())])
+
+		for i, local_dir_var in enumerate(local_dir_vars.T):
+			max_dir_d = np.max(local_dir_var)
+
+			self._max_dir_vars[i] = max_dir_d
+			self._edge_set_dna[i] = max_dir_d > self._tols[i]
 
 	def init_adaption(self):
 
 		self._key_O = -1
-		self._key_B = -1
+		self._key_E = -1
 
 		init_O = Multiindex(self._dim).get_std_total_degree_mindex(self.__init_level_O)
-		init_B = Multiindex(self._dim).get_std_total_degree_mindex_level(self.__init_level_B)
+		init_E = Multiindex(self._dim).get_std_total_degree_mindex_level(self.__init_level_B)
 
 		self._local_basis_local[repr(self._init_multiindex)] 	= self._get_local_hierarchical_basis(self._init_multiindex)
 		self._local_basis_global 								= self._get_local_hierarchical_basis(self._init_multiindex)
@@ -93,70 +99,104 @@ class DimensionPriority(DimensionAdaptivity):
 			local_basis_neighbor = np.array([self._get_no_1D_grid_points(n) - 1 for n in mindex], dtype=int)
 			self._update_local_basis(mindex.tolist(), local_basis_neighbor)
 
-		for mindex in init_B:
-			self._key_B 			+= 1
-			self._B[self._key_B] 	= mindex
+		for mindex in init_E:
+			self._key_E 			+= 1
+			self._E[self._key_E] 	= mindex
 
 			self._multiindex_set.append(mindex)
 
 			local_basis_neighbor = np.array([self._get_no_1D_grid_points(n) - 1 for n in mindex], dtype=int)
 			self._update_local_basis(mindex.tolist(), local_basis_neighbor)
 
-		
-		print Multiindex(self._dim).get_successors_boundary_set(self._B.values())
-
 	def do_one_adaption_step_preproc(self):
 
-		local_multiindices = []
+		self.get_edge_set_dna()
 
-		max_index 	= self.__get_max_score()
-		max_i 		= self._B[max_index]
-		
-		self._key_O				+= 1
-		self._O[self._key_O] 	= max_i
-		self._eta 				-= self._local_error[max_index]
+		print('in preproc')
 
-		del self._B[max_index]
-		del self._local_error[max_index]
+		print('local vars')
+		print(self._local_dir_var)
+		print('MAX VARS')
+		print(self._max_dir_vars)
+		print('DNA CURR EDGE SET')
+		print(self._edge_set_dna)
 
-		neighbors_i = Multiindex(self._dim).get_successors(max_i)
-		for neighbor in neighbors_i:
-			if self._is_O_admissible(neighbor):
+		neighbors_edge_set = Multiindex(self._dim).get_successors_edge_set(self._multiindex_set, list(self._E.values()))
 
-				local_multiindices.append(neighbor)
+		no_diff_genes = np.zeros(len(neighbors_edge_set), dtype=int)
 
-				self._key_B 		+= 1
-				self._B[self._key_B] = neighbor
+		for i, multiindex in enumerate(neighbors_edge_set):
 
-				self._multiindex_set.append(neighbor)
+			multiindex_dna 		= self.__spectral_op_obj.get_multiindex_contrib_all_dir(self._multiindex_bin, multiindex)
+			no_diff_genes[i] 	= np.sum(multiindex_dna * self._edge_set_dna)
 
-				local_basis_neighbor = np.array([self._get_no_1D_grid_points(n) - 1 for n in neighbor], dtype=int)
-				self._update_local_basis(neighbor.tolist(), local_basis_neighbor)
+		# 	print 'FOR MINDEX', multiindex
+		# 	print 'DNA', multiindex_dna
+		# 	print 'AND EDGE SET DNA', self._edge_set_dna
 
-		local_multiindices = np.array(local_multiindices, dtype=int)
+		# print 'NO DIFF GENES', no_diff_genes
 
-		return local_multiindices
+		candidate_multiindex = neighbors_edge_set[np.argmax(no_diff_genes)]
 
-	def do_one_adaption_step_postproc(self, curr_multiindices):
+		self._key_E += 1
+		self._E[self._key_E] = candidate_multiindex 
 
-		for multiindex in curr_multiindices:
+		local_basis_neighbor = np.array([self._get_no_1D_grid_points(n) - 1 for n in candidate_multiindex], dtype=int)
+		self._update_local_basis(candidate_multiindex.tolist(), local_basis_neighbor)
 
-			self._key_local_error 					+= 1
-			local_score					 			 = self.__get_local_score(multiindex)
-			self._local_error[self._key_local_error] = local_score
+		edge_set 							= [multiindex.tolist() for multiindex in list(self._E.values())]
+		existing_keys 						= []
+		self._multiindices_edge_set_to_del 	= []
+		for mindex in edge_set:
 
-			self._eta += local_score
+			fwd_neighbors = Multiindex(self._dim).get_successors(mindex)
+
+			is_in_edge_set = 1
+			for neighbor in fwd_neighbors:
+				if neighbor.tolist() not in edge_set:
+					is_in_edge_set = 0
+					break
+
+			if is_in_edge_set:
+				self._multiindices_edge_set_to_del.append(mindex)
+
+		if self._multiindices_edge_set_to_del:
+			for multiindex in self._multiindices_edge_set_to_del:
+
+				key = self.__find_keys(self._E, multiindex)		
+
+				self._key_O += 1
+				self._O[self._key_O] = self._E[key]
+
+				del self._E[key]
+
+		self._multiindex_set.append(candidate_multiindex)
+
+		print('candidate_multiindex', candidate_multiindex)
+		print('MINDEICES TO DEL', self._multiindices_edge_set_to_del)
+
+		return candidate_multiindex
+
+	def do_one_adaption_step_postproc(self, candidate_multiindex):
+
+		delta_coeff 	= self.__spectral_op_obj.get_spectral_coeff_delta(candidate_multiindex)
+		curr_dir_var 	= self.__spectral_op_obj.get_all_dir_var_multiindex(self._multiindex_bin, delta_coeff, candidate_multiindex)
+
+		self._local_dir_var[repr(candidate_multiindex.tolist())] = curr_dir_var
+
+		for multiindex in self._multiindices_edge_set_to_del:
+			del self._local_dir_var[repr(multiindex)]
 
 	def check_termination_criterion(self):
 
 		max_level = np.max(self._multiindex_set)
-		if len(self._B.values()) == 0 or np.sum(self._local_error.values()) == 0. or max_level >= self._max_level:
+		if len(list(self._E.values())) == 0 or max_level >= self._max_level or np.sum(self._edge_set_dna) == 0:
 			self._stop_adaption = True
 
 	def serialize_data(self, serialization_file):
 		
 		with open(serialization_file, "wb") as output_file:
-			data = [self._key_O, self._O, self._key_B, self._B, self._key_local_error, self._local_error, self._multiindex_set, \
+			data = [self._key_O, self._O, self._key_E, self._E, self._key_local_error, self._local_error, self._multiindex_set, \
 							self._local_basis_local, self._local_basis_global]
 			dump(data, output_file)
 
@@ -165,7 +205,7 @@ class DimensionPriority(DimensionAdaptivity):
 	def unserialize_data(self, serialization_file):
 
 		with open(serialization_file, "rb") as input_file:
-			self._key_O, self._O, self._key_B, self._B, self._key_local_error, self._local_error, self._multiindex_set, \
+			self._key_O, self._O, self._key_E, self._E, self._key_local_error, self._local_error, self._multiindex_set, \
 							self._local_basis_local, self._local_basis_global = load(input_file)
 
 		input_file.close()

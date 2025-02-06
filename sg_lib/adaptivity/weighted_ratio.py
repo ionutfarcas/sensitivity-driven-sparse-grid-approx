@@ -1,4 +1,4 @@
-from abstract_adapt_operation import *
+from .abstract_adapt_operation import *
 
 class WeightedRatio(DimensionAdaptivity):
 
@@ -98,5 +98,5 @@ class WeightedRatio(DimensionAdaptivity):
 	def check_termination_criterion(self):
 
 		max_level = np.max(self._multiindex_set)
-		if len(self._A.values()) == 0 or self._eta <= self._tol or max_level >= self._max_level:
+		if len(list(self._A.values())) == 0 or self._eta <= self._tol or max_level >= self._max_level:
 			self._stop_adaption = True 

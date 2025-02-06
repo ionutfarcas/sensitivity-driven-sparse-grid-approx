@@ -5,9 +5,7 @@ from collections import OrderedDict
 from pickle import dump, load
 from sg_lib.algebraic.multiindex import *
 
-class AbstractOperation(object):
-    __metaclass__ = ABCMeta
-
+class AbstractOperation(object, metaclass=ABCMeta):
     _dim = 0
 
     @property
@@ -22,7 +20,7 @@ class AbstractOperation(object):
 
         possible_diff_indices = np.zeros((self._dim, 2))
 
-        for d in xrange(self._dim):
+        for d in range(self._dim):
             possible_diff_indices[d][0] = multiindex[d]
             possible_diff_indices[d][1] = multiindex[d] - 1
 
@@ -37,7 +35,7 @@ class AbstractOperation(object):
                 
         possible_differences_signs = np.zeros((self._dim, 2))
 
-        for d in xrange(self._dim):
+        for d in range(self._dim):
 
             if multiindex[d] == 1:
                 possible_differences_signs[d][0] = 1
@@ -68,15 +66,29 @@ class AbstractOperation(object):
 
     def update_sg_evals_all_lut(self, sg_point, func_eval):
 
+        # sg_point[0] = np.round(sg_point[0], 5)
+
         self._sg_func_evals_all_lut[repr(sg_point.tolist())] = func_eval
 
     def update_sg_evals_multiindex_lut(self, multiindex, grid_obj):
 
         sg_points = grid_obj.get_fg_points_multiindex(multiindex, self._all_grid_points_1D)
+        # sg_points = grid_obj.get_fg_points_multiindex(multiindex)
+
+        # print('IN UPDATE')
+        # print(sg_points)
+
+        self._all_sg_points_LUT.append(sg_points)
 
         func_evals = []
         for sg_point in sg_points:
+            # print(sg_point)
+
+            #sg_point[0] = np.round(sg_point[0], 5)
+
             func_evals.append(self._sg_func_evals_all_lut[repr(sg_point.tolist())])
+
+        # print('**************')
 
         self._fg_func_evals_multiindex_lut[repr(multiindex.tolist())] = func_evals
     

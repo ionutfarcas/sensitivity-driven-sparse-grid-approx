@@ -1,5 +1,5 @@
-from onedim import *
-from abstract_operation import *
+from .onedim import *
+from .abstract_operation import *
 
 class Quadrature(AbstractOperation):
 	def __init__(self, dim, left_bounds, right_bounds, weights, all_grid_points_1D):
@@ -23,7 +23,7 @@ class Quadrature(AbstractOperation):
 		quad_fg 	 		= 0.
 		quad_weights_all 	= []
 
-		for d in xrange(self._dim):
+		for d in range(self._dim):
 			index 				= multiindex[d] 
 			curr_no_points 		= 2*index - 1
 			grid_1D 			= self._all_grid_points_1D[0:curr_no_points]
@@ -33,7 +33,7 @@ class Quadrature(AbstractOperation):
 
 		tensorized_weights = np.array([np.prod(weights_pair) for weights_pair in list(product(*quad_weights_all))], dtype=np.float64)
 
-		for i in xrange(len(tensorized_weights)):
+		for i in range(len(tensorized_weights)):
 			quad_fg += tensorized_weights[i]*curr_func_evals[i]
 
 		return quad_fg
@@ -44,8 +44,8 @@ class Quadrature(AbstractOperation):
 		
 		differences_indices, differences_signs = self._get_differences_sign(curr_multiindex)
 
-		keys_differences 	= differences_indices.keys()
-		keys_signs 			= differences_signs.keys() 
+		keys_differences 	= list(differences_indices.keys())
+		keys_signs 			= list(differences_signs.keys()) 
 
 		for key in keys_differences:
 			differences 	= differences_indices[key]

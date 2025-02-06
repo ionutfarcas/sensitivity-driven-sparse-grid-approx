@@ -1,4 +1,4 @@
-from abstract_adapt_operation import *
+from .abstract_adapt_operation import *
 
 class SpectralScores(DimensionAdaptivity):
 
@@ -29,6 +29,8 @@ class SpectralScores(DimensionAdaptivity):
 		self._local_basis_global 	= None
 		self._local_basis_local 	= OrderedDict()
 
+		self._V = OrderedDict() 
+
 	def __get_local_score(self, curr_multiindex):
 		
 		local_score 	= 0.
@@ -37,16 +39,27 @@ class SpectralScores(DimensionAdaptivity):
 		if np.sum(curr_multiindex) == self._dim:
 			local_score = 1
 		else:
-			for d in xrange(self._dim + 1):
+			for d in range(self._dim + 1):
 				if local_variances[d] >= self._tols[d]:
 					local_score += 1
 
-		return local_score
+		local_activations 	= np.zeros(self._dim, dtype=int)
+		local_variance_all 	= self.__spectral_op_obj.get_local_total_var_all(curr_multiindex)
+
+		for d in range(self._dim):
+			if local_variance_all[d] >= self._tols[d]:
+				local_activations[d] = 1
+
+		# print 'MINDEX', curr_multiindex, 'ACTIVATION' ,local_activations, 'VARS', local_variance_all
+
+		# self._V[repr(curr_multiindex)] = local_activations
+
+		return local_score, local_activations
 
 	def __get_max_score(self):
 
-		max_scores_pos 	= np.where(np.array([local_score == np.amax(self._local_error.values()) for local_score in self._local_error.values()]))[0]
-		max_scores_keys = np.array([self._local_error.keys()[max_pos] for max_pos in max_scores_pos])
+		max_scores_pos 	= np.where(np.array([local_score == np.amax(list(self._local_error.values())) for local_score in list(self._local_error.values())]))[0]
+		max_scores_keys = np.array([list(self._local_error.keys())[max_pos] for max_pos in max_scores_pos])
 
 		max_elem 	= 0.
 		max_key 	= 0
@@ -73,7 +86,7 @@ class SpectralScores(DimensionAdaptivity):
 		self._key_A 								= 0
 		self._key_local_error 						= 0
 		self._A[self._key_A] 						= self._init_multiindex
-		local_score 								= self.__get_local_score(self._init_multiindex)
+		local_score, local_variance 				= self.__get_local_score(self._init_multiindex)
 		self._local_error[self._key_local_error] 	= local_score
 		self._eta 	 								= local_score
 
@@ -91,12 +104,20 @@ class SpectralScores(DimensionAdaptivity):
 		self._O[self._key_O] 	= max_i
 		self._eta 				-= self._local_error[max_index]
 
+		# print 'MINDEX WITH MAX SCORE', self._A[max_index]
+		# print 'AND ASSOCIATED ACTIVATIOSN', self._V[repr(self._A[max_index])]
+
+		# activated_dir = self._V[repr(self._A[max_index])]
+
 		del self._A[max_index]
 		del self._local_error[max_index]
 
 		neighbors_i = Multiindex(self._dim).get_successors(max_i)
 		for neighbor in neighbors_i:
 			if self._is_O_admissible(neighbor):
+
+				#if np.sum(neighbor > 1) == np.sum(activated_dir) or np.sum(neighbor) == self._dim + 1:
+				#print 'ACCEPTED MUTINDEX', neighbor
 
 				local_multiindices.append(neighbor)
 
@@ -107,6 +128,8 @@ class SpectralScores(DimensionAdaptivity):
 
 				local_basis_neighbor = np.array([self._get_no_1D_grid_points(n) - 1 for n in neighbor], dtype=int)
 				self._update_local_basis(neighbor.tolist(), local_basis_neighbor)
+				# else:
+				# 	print 'REJECTED MUTINDEX', neighbor
 
 		local_multiindices = np.array(local_multiindices, dtype=int)
 
@@ -116,7 +139,7 @@ class SpectralScores(DimensionAdaptivity):
 
 		for multiindex in curr_multiindices:
 			self._key_local_error 					+= 1
-			local_score					 			 = self.__get_local_score(multiindex)
+			local_score, local_variance			     = self.__get_local_score(multiindex)
 			self._local_error[self._key_local_error] = local_score
 
 			self._eta += local_score
@@ -124,7 +147,7 @@ class SpectralScores(DimensionAdaptivity):
 	def check_termination_criterion(self):
 
 		max_level = np.max(self._multiindex_set)
-		if len(self._A.values()) == 0 or np.sum(self._local_error.values()) == 0. or max_level >= self._max_level:
+		if len(list(self._A.values())) == 0 or np.sum(list(self._local_error.values())) == 0. or max_level >= self._max_level:
 			self._stop_adaption = True
 
 	def serialize_data(self, serialization_file):
